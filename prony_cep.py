@@ -23,7 +23,7 @@ z1 = [0.9, np.pi/4]
 z1_bar = [z1[0],-z1[1]] #conjugate pair
 
 z2 = [1.1, np.pi/4]
-z2_bar = [z1[0],-z2[1]] #conjugate pair
+z2_bar = [z2[0],-z2[1]] #conjugate pair
 
 p1 = [0.8, 3*np.pi/4]
 p1_bar = [p1[0],-p1[1]] #conjugate pair
@@ -39,7 +39,7 @@ if poles:
 
 
 ########compute complex differential cepstrum#########
-dcep = differential_cepstrum(N, zeros = zeros, poles = poles)
+dcep = ad_cep(N, zeros = zeros, poles = poles)
 
 ########Run Prony Algorithm to find phase of the modes#########
 
@@ -74,4 +74,13 @@ plt.plot(finalz.T[0], finalz.T[1], 'bo')
 plt.plot(finalp.T[0], finalp.T[1], 'bx')
 plot_unit_circle()
 plt.title('Estimated Poles/Zeros')
+plt.show()
+
+plt.figure()
+plt.plot(finalz.T[0], finalz.T[1], 'bo')
+plt.plot(finalp.T[0], finalp.T[1], 'bx')
+plt.plot(orig_xz, orig_yz, 'go')
+plt.plot(orig_xp, orig_yp, 'gx')
+plot_unit_circle()
+plt.title('Estimated(blue) Ground Truth(green) Poles/Zeros')
 plt.show()

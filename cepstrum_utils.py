@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy.fft as fft
 import scipy.signal as sp
 import scipy
+from scipy.io import wavfile as wavfile
 import random
 import librosa
 import numpy.polynomial.polynomial as poly
@@ -65,7 +66,6 @@ def real_mode_sum(n, modes):
         term = term + modes[i][0]**n*np.cos(modes[i][1]*n)
     
     return term / n
-    
 
  
 def cepstrum_expression(N, zeros = None, poles = None):
@@ -92,12 +92,17 @@ def cepstrum_expression(N, zeros = None, poles = None):
         
     return ccep
 
-def differential_cepstrum(N,zeros = None, poles = None):
+def ad_cep(N,zeros = None, poles = None):
     '''
     computes the differential cepstrum from the analytic expression given the
     eros and poles of a system
     '''
     ccep = cepstrum_expression(N,zeros = zeros, poles = poles)
+    return ccep*np.linspace(0,N,N)
+
+def differential_cepstrum(x, n=None):
+    ccep, _ = complex_cepstrum(x, n)
+    N = len(ccep)
     return ccep*np.linspace(0,N,N)
 
 def pol_to_car(r,a):
@@ -160,7 +165,8 @@ def sort_modes(Amp,alfa,freq,theta, th = 0.3):
     for i in range(len(Amp)):
         x = np.exp(alfa[i])*np.cos(2*np.pi*freq[i])
         y = np.exp(alfa[i])*np.sin(2*np.pi*freq[i])
-        if np.abs(np.abs((theta[i]-freq[i]*2*np.pi)) - np.pi) < th:
+        #if np.abs(np.abs((theta[i]-freq[i]*2*np.pi)) - np.pi) < th:
+        if np.cos(theta[i]-freq[i]*2*np.pi) < 0:
             finalz.append([x,y]);
         else:
             finalp.append([x,y]);
@@ -251,5 +257,5 @@ if __name__ == '__main__':
     dcep = get_matlab_dcep()
     p = 4
     
-    print(matlab_prony(dcep, p))
+    print(prony(dcep, p))
     
