@@ -6,7 +6,7 @@ Estimate the zeros and poles of a system using the Cepstrum and Prony Algoritm
 
 ########specify parameters of the script#########
 N = 64 #spectrum size
-lpc_order = 8
+lpc_order = 6
 M = 2*lpc_order #cepstrum window size
 
 t = np.linspace(0,M,M)
@@ -21,7 +21,7 @@ x = x / sr
 x = x-x.min(); x = x / x.max(); x = x*2 - 1
 
 ########compute complex differential cepstrum#########
-dcep = differential_cepstrum(x*sp.hanning(len(x)))
+dcep = differential_cepstrum(x[:256]*sp.hanning(len(x[:256])))
 
 #import pdb; pdb.set_trace()
 
