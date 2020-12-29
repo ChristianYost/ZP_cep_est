@@ -7,6 +7,6 @@ This is a python implementation of a new technique for extracting the zeros and 
 `cepstrum_utils.py` has all of the necessary functions.  
   
 ## Analytic Example  
-![ground truth differential cepstrum](https://github.com/ChristianYost/ZP_cep_est/blob/master/figs_pics/a_orig_diff_cep.png)! [ground truth zeros/poles](https://github.com/ChristianYost/ZP_cep_est/blob/master/figs_pics/a_orig_zp.png)    
+![ground truth differential cepstrum](https://github.com/ChristianYost/ZP_cep_est/blob/master/figs_pics/a_orig_diff_cep.png) ![ground truth zeros/poles](https://github.com/ChristianYost/ZP_cep_est/blob/master/figs_pics/a_orig_zp.png)    
 ![estimated differential cepstrum](https://github.com/ChristianYost/ZP_cep_est/blob/master/figs_pics/a_appx_diff_cep.png) ![estimate zeros/poles](https://github.com/ChristianYost/ZP_cep_est/blob/master/figs_pics/a_est_zp.png)  
  
