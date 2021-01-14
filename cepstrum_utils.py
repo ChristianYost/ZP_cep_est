@@ -9,6 +9,8 @@ import random
 import librosa
 import numpy.polynomial.polynomial as poly
 import os
+import argparse
+from scipy.spatial import distance_matrix
 
 #return filter coefficients from the zero pole locations 
 #here we don't include conjugates (maybe change this later)
@@ -35,8 +37,13 @@ def get_coefficients(zeros = [], poles = []):
 
     return n_cough, d_cough
 
-#compute complex cepstrum using fourier transform
-def complex_cepstrum(x, n=None):
+#compute complex cepstrum using fourier transform and phase unwrapping
+def complex_cepstrum(x, win=False, n=None):
+    
+    if win:
+        window = np.hanning(len(x))
+    else:
+        window = np.ones_like(x)
     
     def _unwrap(phase):
         samples = phase.shape[-1]
@@ -47,7 +54,8 @@ def complex_cepstrum(x, n=None):
         ndelay = np.array(np.round(unwrapped[..., center] / np.pi))
         unwrapped -= np.pi * ndelay[..., None] * np.arange(samples) / center
         return unwrapped, ndelay
-    spectrum = np.fft.fft(x, n=n)
+    
+    spectrum = np.fft.fft(window*x, n=n)
     unwrapped_phase, ndelay = _unwrap(np.angle(spectrum))
     log_spectrum = np.log(np.abs(spectrum)+1e-12) + 1j * unwrapped_phase
     ceps = np.fft.ifft(log_spectrum).real
@@ -75,8 +83,8 @@ def cepstrum_expression(N, zeros = None, poles = None):
     poles: same as zeros
     '''
     ccep = [0]*N
-    min_z = [z for z in zeros if z[1] < 1]
-    max_z = [z for z in zeros if z[1] > 1]
+    min_z = [z for z in zeros if z[0] < 1]
+    max_z = [z for z in zeros if z[0] > 1]
     
 
     #minimum phase modes
@@ -100,10 +108,11 @@ def ad_cep(N,zeros = None, poles = None):
     ccep = cepstrum_expression(N,zeros = zeros, poles = poles)
     return ccep*np.linspace(0,N,N)
 
-def differential_cepstrum(x, n=None):
-    ccep, _ = complex_cepstrum(x, n)
+def differential_cepstrum(x, win = False, n=None):
+    ccep, ndelay = complex_cepstrum(x, win, n)
     N = len(ccep)
-    return ccep*np.linspace(0,N,N)
+    
+    return ccep*np.linspace(0, N, N) , ndelay# - np.pi * ndelay * np.arange(N) / N
 
 def pol_to_car(r,a):
     x = r*np.cos(a)
@@ -124,12 +133,12 @@ def to_plot_polar(pol_modes):
     
     return x, y
 
-def plot_unit_circle(N = 1024):
+def plot_unit_circle(ax, N = 1024):
     t = [i*2*np.pi/N for i in range(N)]
     t2 = [2*(i - N / 2) / N for i in range(N)]
-    plt.plot(np.cos(t), np.sin(t), linewidth=1)
-    plt.plot(t2, np.zeros((N,1)))
-    plt.plot(np.zeros((N,1)),t2)
+    ax.plot(np.cos(t), np.sin(t), linewidth=1)
+    ax.plot(t2, np.zeros((N,1)))
+    ax.plot(np.zeros((N,1)),t2)
 
 def prony(this_x,p):
     
@@ -173,6 +182,10 @@ def sort_modes(Amp,alfa,freq,theta, th = 0.3):
     
     return np.array(finalz), np.array(finalp)
 
+def match_nodes(modes, gt):
+    
+    return
+
 def plot_reconstructed(N,Amp,alfa,freq,theta):
     new = np.zeros((N,1), dtype = "complex_")
     for n in range(1,N):
@@ -184,6 +197,22 @@ def plot_reconstructed(N,Amp,alfa,freq,theta):
             
     return new
 
+def polar_modes_mse(modes, gt):
+    
+    new_modes = np.copy(modes);new_gt = np.copy(gt)
+    out_modes = []; out_gt = []
+    
+    while new_modes.shape[0] > 0 and new_gt.shape[0] > 0:
+        d_mat = distance_matrix(new_modes, new_gt)
+        x1, x2 = np.where(d_mat == d_mat.min())
+        
+        out_modes.append(new_modes[x1])
+        out_gt.append(new_gt[x2])
+    
+        new_modes = np.delete(new_modes, x1, 0)
+        new_gt = np.delete(new_gt, x2, 0)
+    
+    return np.concatenate(out_modes), np.concatenate(out_gt)
 
 def get_matlab_dcep():
     dcep = np.array([0,
