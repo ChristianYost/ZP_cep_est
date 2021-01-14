@@ -6,7 +6,6 @@ import scipy.signal as sp
 import scipy
 from scipy.io import wavfile as wavfile
 import random
-import librosa
 import numpy.polynomial.polynomial as poly
 import os
 import argparse
@@ -136,9 +135,9 @@ def to_plot_polar(pol_modes):
 def plot_unit_circle(ax, N = 1024):
     t = [i*2*np.pi/N for i in range(N)]
     t2 = [2*(i - N / 2) / N for i in range(N)]
-    ax.plot(np.cos(t), np.sin(t), linewidth=1)
-    ax.plot(t2, np.zeros((N,1)))
-    ax.plot(np.zeros((N,1)),t2)
+    ax.plot(np.cos(t), np.sin(t), 'black', linewidth=1)
+    ax.plot(t2, np.zeros((N,1)), 'black', linewidth=1)
+    ax.plot(np.zeros((N,1)),t2, 'black', linewidth=1)
 
 def prony(this_x,p):
     
@@ -212,79 +211,30 @@ def polar_modes_mse(modes, gt):
         new_modes = np.delete(new_modes, x1, 0)
         new_gt = np.delete(new_gt, x2, 0)
     
-    return np.concatenate(out_modes), np.concatenate(out_gt)
+    return np.concatenate(out_modes), np.concatenate(out_gt)   
 
-def get_matlab_dcep():
-    dcep = np.array([0,
-    -2.40416305603426,
-    -3.34328576167227e-16,
-    1.75503903090501,
-    0.493000000000000,
-    1.29848846656410,
-    4.84178685339816e-16,
-    -0.972996042896794,
-    -0.525390100000000,
-    -0.737707841133520,
-    -7.92216867543415e-16,
-    0.565275221005905,
-    0.427420119490000,
-    0.437221325614946,
-    1.52969059811903e-16,
-    -0.340932247572210,
-    -0.314309042428237,
-    -0.267696223780917,
-    -2.88997066994739e-16,
-    0.211420247340896,
-    0.220094879089002,
-    0.167785636236272,
-    4.86125908956648e-16,
-    -0.133688916321074,
-    -0.150088153188006,
-    -0.106868854840673,
-    1.01508314956216e-16,
-    0.0856555052981319,
-    0.100800963982705,
-    0.0687996683328862,
-    2.30899072674205e-16,
-    -0.0553557051361333,
-    -0.0670891131555650,
-    -0.0446000243836252,
-    3.59391309226557e-17,
-    0.0359736378136849,
-    0.0444077619825615,
-    0.0290411221893720,
-    1.10953314331160e-16,
-    -0.0234608933319750,
-    -0.0292959202837122,
-    -0.0189633775883934,
-    1.19948547961604e-17,
-    0.0153347703998745,
-    0.0192865842383358,
-    0.0124048021379949,
-    5.02033600942717e-17,
-    -0.0100374181247977,
-    -0.0126807693918748,
-    -0.00812360685262013,
-    2.34920530069131e-18,
-    0.00657583238040400,
-    0.00833084706539196,
-    0.00532367915918757,
-    2.33141442574558e-17,
-    -0.00431042327482053,
-    -0.00547037201152369,
-    -0.00349031847236694,
-    -6.53011246476021e-20,
-    0.00282643835926508,
-    0.00359095560874714,
-    0.00228895452485936,
-    1.07327800509457e-17,
-    -0.00185375841560305])
+def run(dcep, lpc_order, N, modes):
+    ########Run Prony Algorithm to find phase of the modes#########
     
-    return dcep
-
-if __name__ == '__main__':
-    dcep = get_matlab_dcep()
-    p = 4
+    [Amp, alfa, freq, theta] = prony(dcep, lpc_order)
     
-    print(prony(dcep, p))
+    ########reconstruct cepstru from approximation########
+    new_dcep = plot_reconstructed(N, Amp, alfa, freq, theta)
     
+    ########sort zeros from poles########
+    finalz, finalp = sort_modes(Amp, alfa, freq, theta)
+    
+    #MSE calculation
+    pcar = [pol_to_car(x[0], x[1]) for x in finalp]
+    pcar = np.array([x[0]+1j*x[1] for x in pcar])
+    
+    zcar = [pol_to_car(x[0], x[1]) for x in finalz]
+    zcar = np.array([x[0]+1j*x[1] for x in zcar])
+    
+    new_modes = np.array([[x] for x in np.concatenate([pcar, zcar])])
+    
+    new_modes, modes = polar_modes_mse(new_modes, modes)
+    
+    mse = np.abs(np.square(new_modes - modes)).sum() / len(modes)
+    
+    return finalz, finalp, new_dcep, new_modes, mse 
