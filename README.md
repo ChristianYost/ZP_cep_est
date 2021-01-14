@@ -11,7 +11,7 @@ This project was written using python 3.7 and fairly standard packages. To make 
 In order to run the program simply go to the command line and run `python3 main.py`. We have the following command line arguments  
   
 `--plot` : flag to plot output  
-`--window` : flag to window impulse response. **you don't want to window. Included for the time being, but likely to be removed shortly**  
+`--window` : flag to window impulse response. **you don't want to window. To be removed**  
 `--N` : discrete spectrum size  
 `--noise` : flag to add noise to impulse response  
 `--numzeros` : number of zeros in system  
