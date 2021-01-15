@@ -1,4 +1,4 @@
 sympy==1.7.1
 numpy==1.19.2
 matplotlib==3.3.3
-scpip install -r requirements.txtipy==1.5.4
+scpipy==1.5.4
