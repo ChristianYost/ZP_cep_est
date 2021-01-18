@@ -248,8 +248,6 @@ def run(dcep, lpc_order, N, modes):
     
     [Amp, alfa, freq, theta] = prony(dcep, lpc_order)
     
-    # import pdb; pdb.set_trace()
-    
     ########reconstruct cepstru from approximation########
     new_dcep = plot_reconstructed(N, Amp, alfa, freq, theta)
     
