@@ -1,14 +1,6 @@
 from utils import *
 '''
 Estimate the zeros and poles of a system using the Cepstrum and Prony Algoritm
-
-TODO:
-    1. write function to calculate error of estimate
-    2. write function to generate random poles/zeros
-    3. run tests to get a sense of the accuracy of the method
-    4. integrate additive noise
-    5. integrate user audio option
-    6. include non-minimum phase modes 
 '''
 
 parser = argparse.ArgumentParser()
