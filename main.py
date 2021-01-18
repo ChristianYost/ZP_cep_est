@@ -59,8 +59,7 @@ if __name__ == '__main__':
     
     if noise:
         impulse += 0.001*np.random.normal(0,1,N)
-        
-    
+            
     
     #----------------------------A N A L Y T I C-------------------------------#
     
