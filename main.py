@@ -53,14 +53,12 @@ if __name__ == '__main__':
         orig_xp, orig_yp = to_plot_polar(poles)
         impulse_p = np.array([x[0]+1j*y[0] for (x,y) in zip(orig_xp, orig_yp)])
         
-    
-    
     modes = np.array([[x] for x in np.concatenate([impulse_p, impulse_z])])
     
     impulse = sp.dlti(impulse_z, impulse_p, [1.0]).impulse(n=N)[1][0].flatten()
     
     if noise:
-        impulse += 0.005*np.random.normal(0,1,N)
+        impulse += 0.001*np.random.normal(0,1,N)
         
     
     

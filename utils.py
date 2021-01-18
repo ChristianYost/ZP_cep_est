@@ -144,6 +144,7 @@ def prony(this_x,p):
     N = 2*p
     x = this_x[1:N+1]
     
+    #lpc roots via toeplitz matrix
     T = scipy.linalg.toeplitz(x[p-1:N-1], np.flip(x[:p]))
     a = np.linalg.solve(-T, x[p:N])
     c = np.concatenate([[1],a])
@@ -154,18 +155,47 @@ def prony(this_x,p):
     
     Z = np.matrix(np.zeros((p,p), dtype = "complex_"))
     
+    #vandermonde matrix
     pw = [i for i in range(p)]
     for i in range(len(r)):
         Z.T[i] = r[i]**pw
     
+    #find coefficients
     h = np.linalg.solve(Z, x[:p])
     
     Amp = np.abs(h)
     theta = np.arctan2(h.imag,h.real)    
     
     return [Amp, alfa, freq, theta]
+
+def MPM(this_x, p):
+    N = 2*p
+    x = this_x[:N]
     
+    Y = scipy.linalg.hankel(x[:N-p], x[N-p:])
     
+    Y1 = Y[:, :-1]; Y2 = Y[:, 1:]
+    
+    l = np.linalg.eig((Y2 @ np.linalg.pinv(Y1)))[0]
+    
+    # l = np.linalg.eig(np.matmul(np.linalg.pinv(Y1) , Y2))[0]
+    
+    Z = np.matrix(np.zeros((p,p), dtype = "complex_"))
+    
+    pw = [i for i in range(p)]
+    for i in range(len(l)):
+        Z[i] = l[i]**pw
+        
+    h = np.linalg.solve(Z, x[:p])
+    
+    alfa = np.log(np.abs(l))
+    freq = np.arctan2(l.imag,l.real) / (2*np.pi)
+    
+    Amp = np.abs(h)
+    theta = np.arctan2(h.imag,h.real)  
+    
+    return [Amp, alfa, freq, theta]
+
     
 def sort_modes(Amp,alfa,freq,theta, th = 0.3):
     finalz = []; finalp = [];
@@ -217,6 +247,8 @@ def run(dcep, lpc_order, N, modes):
     ########Run Prony Algorithm to find phase of the modes#########
     
     [Amp, alfa, freq, theta] = prony(dcep, lpc_order)
+    
+    # import pdb; pdb.set_trace()
     
     ########reconstruct cepstru from approximation########
     new_dcep = plot_reconstructed(N, Amp, alfa, freq, theta)
